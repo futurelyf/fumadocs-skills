@@ -320,7 +320,7 @@ export function baseOptions(): BaseLayoutProps {
 
 This will update the GitHub link in the navbar to `https://github.com/futurelyf` (profile page, not a specific repository).
 
-### 3. Update Hero Section Text
+### 3. Update Hero Section Text & Adjust Heading Line Height
 
 **File**: `template/src/app/(home)/page.tsx`
 
