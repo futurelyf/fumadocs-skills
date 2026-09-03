@@ -467,6 +467,66 @@ export function baseOptions(): BaseLayoutProps {
 - Renders the `FumadocsIcon` with `size-5` class (Tailwind for width/height)
 - Displays the app name after the icon
 
+### Step 3: Add Browser Tab Icon (Favicon)
+
+Create a Next.js icon route to generate the favicon dynamically.
+
+**`src/app/icon.tsx`:**
+```typescript
+import { ImageResponse } from 'next/og';
+
+export const runtime = 'edge';
+export const size = { width: 32, height: 32 };
+export const contentType = 'image/png';
+
+export default function Icon() {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <svg width="32" height="32" viewBox="0 0 180 180">
+          <circle
+            cx="90"
+            cy="90"
+            r="89"
+            fill="url(#iconGradient)"
+            stroke="#ffffff"
+            strokeWidth="1"
+          />
+          <defs>
+            <linearGradient id="iconGradient" gradientTransform="rotate(45)">
+              <stop offset="45%" stopColor="#000000" />
+              <stop offset="100%" stopColor="#ffffff" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    ),
+    {
+      ...size,
+    }
+  );
+}
+```
+
+**What it does:**
+- Uses Next.js's `ImageResponse` API to generate a favicon dynamically
+- Creates a 32×32 PNG image with the circular gradient icon
+- Uses a static black-to-white gradient for consistency across all pages
+- Next.js automatically serves this as the browser tab icon
+
+**Why static colors?**
+- Browser tab icons (favicons) are static images cached by the browser
+- They don't have access to CSS variables or dynamic theming
+- A neutral black-to-white gradient provides consistent branding across all pages and themes
+
 ### Expected Results
 
 After completing this task:
@@ -477,4 +537,5 @@ After completing this task:
   - Section 2: Blue gradient
 - **Theme adaptation**: Gradient automatically adjusts for light/dark mode
 - **Unique IDs**: Multiple instances won't conflict due to `useId()` hook
+- **Browser tab icon**: Circular black-to-white gradient icon appears in browser tabs
 
