@@ -377,6 +377,46 @@ Change button text from "Open GitHub" to "Contact" and update the link to your w
 </a>
 ```
 
+### 6. Set Browser Tab Title
+
+**File**: `template/src/app/layout.tsx`
+
+Add metadata export to set the browser tab title:
+
+```tsx
+import { RootProvider } from 'fumadocs-ui/provider/next';
+import './global.css';
+import { Inter } from 'next/font/google';
+import { Body } from './layout.client';
+import type { Metadata } from 'next';
+
+const inter = Inter({
+  subsets: ['latin'],
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: 'Future Studio',
+    template: '%s | Future Studio',
+  },
+};
+
+export default function Layout({ children }: LayoutProps<'/'>) {
+  return (
+    <html lang="en" className={inter.className} suppressHydrationWarning>
+      <Body>
+        <RootProvider>{children}</RootProvider>
+      </Body>
+    </html>
+  );
+}
+```
+
+**What it does:**
+- Sets the homepage browser tab title to "Future Studio"
+- Uses a template for other pages: "Page Name | Future Studio"
+- Follows Next.js App Router metadata convention
+
 ## Summary of Changes
 
 | Item | From | To |
@@ -386,8 +426,10 @@ Change button text from "Open GitHub" to "Contact" and update the link to your w
 | Hero Tagline | "the React.js docs framework you love." | "The docs template you love!" |
 | Primary Button | "Getting Started" | "Get Started" |
 | Secondary Button | "Open GitHub" → `github.com/fuma-nama/fumadocs` | "Contact" → `futurestudio.dev` |
+| Page Title | (none) | "Future Studio" (with template for other pages) |
 
 ## Files Modified
 
 1. `template/src/lib/shared.ts` - App name and GitHub config
 2. `template/src/app/(home)/page.tsx` - Hero section text and buttons
+3. `template/src/app/layout.tsx` - Page title metadata
