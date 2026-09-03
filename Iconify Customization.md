@@ -1,6 +1,6 @@
-# Adding Iconify Icon Support to Fumadocs
+# Adding Iconify Icon Support to Fumadocs (Offline)
 
-This guide explains how to add Iconify icon support to a Fumadocs project while maintaining compatibility with the built-in Lucide icons plugin.
+This guide explains how to add Iconify icon support to a Fumadocs project with offline capability, ensuring icons work without internet connection. The implementation maintains compatibility with the built-in Lucide icons plugin.
 
 ## Overview
 
@@ -9,6 +9,7 @@ Fumadocs comes with built-in support for Lucide icons using the `lucideIconsPlug
 - Using different naming conventions (Lucide: `Building`, Iconify: `source:name`)
 - Creating a wrapper for Lucide that skips Iconify-formatted icons
 - Adding a separate Iconify plugin that only processes icons with colons
+- Preloading icon data locally for offline use (no CDN dependency)
 
 ## Prerequisites
 
@@ -17,15 +18,69 @@ Fumadocs comes with built-in support for Lucide icons using the `lucideIconsPlug
 
 ## Implementation Steps
 
-### Step 1: Install Iconify React
+### Step 1: Install Required Packages
 
-Install the `@iconify/react` package:
+Install the `@iconify/react` package and icon set packages you need:
 
 ```bash
 pnpm install @iconify/react
+pnpm install -D @iconify-json/fa7-brands  # Font Awesome Brands example
+pnpm install -D @iconify-json/<collection-name>
 ```
 
-### Step 2: Create the Iconify Plugin
+### Step 2: Create the Icon Registry
+
+Create a new file at `<dir>/src/lib/icon-registry.ts`:
+
+This component preloads icon collections for offline use, ensuring icons work without CDN dependency.
+
+```tsx
+'use client';
+
+import { addCollection } from '@iconify/react';
+import { useEffect } from 'react';
+
+/**
+ * Preload icon collections for offline use.
+ * This ensures icons work without CDN dependency.
+ *
+ * To add more icon sets:
+ * 1. Install: pnpm install -D @iconify-json/<collection-name>
+ * 2. Import the JSON data in this file
+ * 3. Add to the collections array below
+ */
+
+// Import your icon collections here
+import fa7BrandsIcons from '@iconify-json/fa7-brands/icons.json';
+
+// Add all collections to this array
+const collections = [
+  fa7BrandsIcons,
+  // Add more icon sets here
+];
+
+// Register all collections
+collections.forEach((collection) => {
+  addCollection(collection as any);
+});
+
+/**
+ * IconRegistry component - must be rendered in your root layout
+ * to ensure icons are registered on the client
+ */
+export function IconRegistry() {
+  useEffect(() => {
+    // Re-register on client mount to ensure they're available
+    collections.forEach((collection) => {
+      addCollection(collection as any);
+    });
+  }, []);
+
+  return null;
+}
+```
+
+### Step 3: Create the Iconify Plugin
 
 Create a new file at `<dir>/src/lib/iconify-plugin.tsx`:
 
@@ -77,7 +132,7 @@ export function iconifyPlugin(options: IconifyPluginOptions = {}) {
 }
 ```
 
-### Step 3: Create the Lucide Plugin Wrapper
+### Step 4: Create the Lucide Plugin Wrapper
 
 Create a new file at `<dir>/src/lib/lucide-plugin-wrapper.tsx`:
 
@@ -153,7 +208,7 @@ export function lucideIconsPluginWrapper(options: { defaultIcon?: keyof typeof i
 }
 ```
 
-### Step 4: Update the Source Configuration
+### Step 5: Update the Source Configuration
 
 Modify `<dir>/src/lib/source.ts` to use both plugins:
 
@@ -192,15 +247,67 @@ export const source = loader({
 });
 ```
 
+### Step 6: Update Root Layout
+
+Modify `<dir>/src/app/layout.tsx` to render the IconRegistry component:
+
+**Before:**
+```tsx
+import { RootProvider } from 'fumadocs-ui/provider/next';
+import './global.css';
+import { Inter } from 'next/font/google';
+import { Body } from './layout.client';
+
+const inter = Inter({
+  subsets: ['latin'],
+});
+
+export default function Layout({ children }: LayoutProps<'/'>) {
+  return (
+    <html lang="en" className={inter.className} suppressHydrationWarning>
+      <Body>
+        <RootProvider>{children}</RootProvider>
+      </Body>
+    </html>
+  );
+}
+```
+
+**After:**
+```tsx
+import { RootProvider } from 'fumadocs-ui/provider/next';
+import './global.css';
+import { Inter } from 'next/font/google';
+import { Body } from './layout.client';
+import { IconRegistry } from '@/lib/icon-registry';
+
+const inter = Inter({
+  subsets: ['latin'],
+});
+
+export default function Layout({ children }: LayoutProps<'/'>) {
+  return (
+    <html lang="en" className={inter.className} suppressHydrationWarning>
+      <Body>
+        <IconRegistry />
+        <RootProvider>{children}</RootProvider>
+      </Body>
+    </html>
+  );
+}
+```
+
 ## Files Created/Modified
 
 ### Files Created:
-1. **`<dir>/src/lib/iconify-plugin.tsx`** - The Iconify plugin implementation
-2. **`<dir>/src/lib/lucide-plugin-wrapper.tsx`** - Wrapper for Lucide that skips Iconify icons
+1. **`<dir>/src/lib/icon-registry.ts`** - Icon registry component for offline icon loading
+2. **`<dir>/src/lib/iconify-plugin.tsx`** - The Iconify plugin implementation
+3. **`<dir>/src/lib/lucide-plugin-wrapper.tsx`** - Wrapper for Lucide that skips Iconify icons
 
 ### Files Modified:
 1. **`<dir>/src/lib/source.ts`** - Updated imports and plugin configuration
-2. **`<dir>/package.json`** - Updated dependencies (via package manager)
+2. **`<dir>/src/app/layout.tsx`** - Added IconRegistry component
+3. **`<dir>/package.json`** - Updated dependencies (via package manager)
 
 ## Usage
 
@@ -249,11 +356,20 @@ Once implemented, you can use both icon systems in your `meta.json` files:
 
 ## How It Works
 
+### Offline Icon Loading
+
+Icons are preloaded from locally installed packages rather than fetched from a CDN:
+
+1. **Icon packages** (`@iconify-json/*`) contain the icon data as JSON files
+2. **Icon Registry** imports these JSON files and registers them with `@iconify/react`
+3. **Client-side registration** ensures icons are available before any component tries to render them
+4. **No network requests** - all icon data is bundled with your application
+
 ### Icon Name Detection
 
 The system automatically detects which icon library to use based on the icon name format:
 
-- **Contains `:` (colon)** → Iconify icon (e.g., `mdi:home`, `cbi:claude-clawd`)
+- **Contains `:` (colon)** → Iconify icon (e.g., `mdi:home`, `bi:person`)
 - **No `:` (colon)** → Lucide icon (e.g., `Building`, `Home`, `Settings`)
 
 ### Plugin Execution Order
@@ -268,19 +384,39 @@ The system automatically detects which icon library to use based on the icon nam
 
 This ensures no conflicts between the two systems.
 
+## Adding More Icon Sets
+
+To add additional icon sets for offline use:
+
+### Step 1: Install the Icon Set Package
+
+```bash
+pnpm install -D @iconify-json/fa7-brands  # Font Awesome Brands example
+pnpm install -D @iconify-json/<collection-name>
+```
+
+### Step 2: Import and Register in icon-registry.ts
+
+```tsx
+// Add to imports
+import fa7BrandsIcons from '@iconify-json/fa7-brands/icons.json';
+import anotherIconSet from '@iconify-json/<collection-name>/icons.json';
+
+// Add to collections array
+const collections = [
+  fa7BrandsIcons,
+  anotherIconSet,
+  // Add more icon sets here
+];
+```
+
+That's it! The icons will now work offline.
+
 ## Finding Iconify Icons
 
 Browse available Iconify icons at: https://icon-sets.iconify.design/
 
-Popular icon sets include:
-
-- `mdi:` - Material Design Icons
-- `logos:` - Brand logos  
-- `heroicons:` - Heroicons
-- `tabler:` - Tabler Icons
-- `carbon:` - Carbon Design System
-- `ph:` - Phosphor Icons
-- `lucide:` - Lucide icons (via Iconify, though native Lucide is preferred)
+**Note:** Remember to install the corresponding `@iconify-json/<collection-name>` package for any icon set you want to use offline.
 
 ## Troubleshooting
 
@@ -288,10 +424,11 @@ Popular icon sets include:
 
 If Iconify icons aren't rendering:
 
-1. Verify the icon name format includes a colon (e.g., `mdi:home`, not `mdi-home`)
-2. Check that `@iconify/react` is installed
-3. Ensure the icon exists at https://icon-sets.iconify.design/
-4. Check the browser console for errors
+1. Verify the icon name format includes a colon (e.g., `fa7-brands:github`, not `fa7-brands-github`)
+2. Check that you've installed the icon set package (e.g., `@iconify-json/fa7-brands`)
+3. Ensure the icon set is imported and added to the `collections` array in `icon-registry.ts`
+4. Verify the `IconRegistry` component is rendered in your root layout
+5. Check the browser console for errors
 
 ### Lucide Icons Breaking
 
@@ -311,9 +448,20 @@ pnpm run types:check
 npm run types:check
 ```
 
+### Icons Not Loading Offline
+
+If icons require internet connection:
+
+1. Verify you've installed the specific `@iconify-json/*` package (not just `@iconify/react`)
+2. Check that the icon set is imported in `icon-registry.ts`
+3. Ensure the icon set is added to the `collections` array
+4. The `IconRegistry` component must be rendered in the layout
+
 ## Notes
 
-- The Iconify plugin downloads icons on-demand from the Iconify CDN
-- For production, consider using `@iconify/json` for offline icon data
+- All icon data is bundled with your application - no CDN requests
+- Icons work completely offline once the packages are installed
+- Bundle size increases with each icon set you add
+- Only install icon sets you actually use to keep bundle size down
 - Both plugins support a `defaultIcon` option for fallback icons
 - The wrapper approach preserves all existing Lucide functionality
