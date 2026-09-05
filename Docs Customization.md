@@ -486,7 +486,6 @@ Create a Next.js icon route to generate the favicon dynamically.
 ```typescript
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
 export const size = { width: 32, height: 32 };
 export const contentType = 'image/png';
 
@@ -532,6 +531,8 @@ export default function Icon() {
 - Creates a 32×32 PNG image with the circular gradient icon
 - Uses a static black-to-white gradient for consistency across all pages
 - Next.js automatically serves this as the browser tab icon
+
+**Do not add `export const runtime = 'edge'`.** Next.js 16 deprecated the Edge runtime and warns on build. `ImageResponse` works on the default Node.js runtime, so simply omit the declaration.
 
 **Why static colors?**
 - Browser tab icons (favicons) are static images cached by the browser
