@@ -1,15 +1,28 @@
 **Caution: All the paths/directories mentioned in this file is for reference only because paths may change depending on different versions of fumadocs.**
 
+## Path Convention
+
+Throughout this guide, `<dir>` stands for the top-level directory of the Fumadocs app you are working in — the folder containing `package.json`, `src/`, and `content/`.
+
+- If the app is at the repository root, `<dir>` is `.` and `<dir>/src/app/layout.tsx` simply means `src/app/layout.tsx`.
+- If the app lives in a subfolder (e.g. `template/`, `apps/docs/`), substitute that name: `<dir>/src/app/layout.tsx` → `template/src/app/layout.tsx`.
+
+Resolve `<dir>` once at the start, then apply it consistently to every path below.
+
+**Note:** `<dir>` applies to paths inside the app you are modifying. It does NOT apply to import specifiers beginning with `@/` (such as `@/lib/cn`) — those are TypeScript path aliases resolved relative to the app's own `src/` directory, so leave them exactly as written. It also does not apply to `<official>` (see below).
+
+Separately, `<official>` stands for a local checkout of the official Fumadocs monorepo, used only as a source to copy reference assets from. It is a different location than `<dir>`.
+
 # Task 4: Hero Section with Animated Shaders
 
-This task transplants the official Fumadocs homepage hero section design to the template, including animated gradient backgrounds and the screenshot preview.
+This task transplants the official Fumadocs homepage hero section design to your app, including animated gradient backgrounds and the screenshot preview.
 
 ## Required Dependencies
 
-Install the following packages using pnpm:
+Install the following packages using pnpm, from inside `<dir>`:
 
 ```bash
-pnpm add @paper-design/shaders-react next-themes
+cd "<dir>" && pnpm add @paper-design/shaders-react next-themes
 ```
 
 ### Dependencies Explained:
@@ -18,7 +31,7 @@ pnpm add @paper-design/shaders-react next-themes
 
 ## Files to Create/Modify
 
-### 1. Create `template/src/app/(home)/page.client.tsx`
+### 1. Create `<dir>/src/app/(home)/page.client.tsx`
 
 This file contains the Hero component with shader effects and intersection observer logic.
 
@@ -151,7 +164,7 @@ function useIsVisible(ref: RefObject<HTMLElement | null>) {
 }
 ```
 
-### 2. Update `template/src/app/(home)/page.tsx`
+### 2. Update `<dir>/src/app/(home)/page.tsx`
 
 Replace the simple "Hello World" page with the hero section design:
 
@@ -207,11 +220,13 @@ export default function HomePage() {
 
 ### 3. Copy Screenshot Image
 
-Copy the hero preview image from the official repo:
+Copy the hero preview image from a local checkout of the official repo (`<official>`) into your app (`<dir>`):
 
 ```bash
-cp official/apps/docs/app/(home)/hero-preview.jpeg template/src/app/(home)/hero-preview.jpeg
+cp "<official>/apps/docs/app/(home)/hero-preview.jpeg" "<dir>/src/app/(home)/hero-preview.jpeg"
 ```
+
+If you do not have the official repo checked out locally, substitute any image with a similar aspect ratio instead.
 
 ## Implementation Details
 
@@ -251,7 +266,7 @@ cp official/apps/docs/app/(home)/hero-preview.jpeg template/src/app/(home)/hero-
 
 After implementation:
 
-1. Start dev server: `pnpm dev`
+1. Start dev server: `pnpm dev` (from inside `<dir>`)
 2. Navigate to homepage
 3. Verify animated gradient background appears
 4. Verify dithering sphere effect in top-right
@@ -270,13 +285,13 @@ After implementation:
 
 # Task 5: Customization Updates
 
-This task customizes the branding and links in the template to match your personal/company identity.
+This task customizes the branding and links in your app to match your personal/company identity.
 
 ## Changes Required
 
 ### 1. Change Navbar Title
 
-**File**: `template/src/lib/shared.ts`
+**File**: `<dir>/src/lib/shared.ts`
 
 Change the app name from "My App" to "Future Studio":
 
@@ -287,8 +302,8 @@ export const appName = 'Future Studio';
 ### 2. Update GitHub Links
 
 **Files**: 
-- `template/src/lib/shared.ts` - Update the user config
-- `template/src/lib/layout.shared.tsx` - Remove repo from URL
+- `<dir>/src/lib/shared.ts` - Update the user config
+- `<dir>/src/lib/layout.shared.tsx` - Remove repo from URL
 
 First, update the GitHub user in `shared.ts`:
 
@@ -322,7 +337,7 @@ This will update the GitHub link in the navbar to `https://github.com/futurelyf`
 
 ### 3. Update Hero Section Text & Adjust Heading Line Height
 
-**File**: `template/src/app/(home)/page.tsx`
+**File**: `<dir>/src/app/(home)/page.tsx`
 
 Change the tagline from "the React.js docs framework you love." to "The docs template you love!" and adjust the heading line height:
 
@@ -340,7 +355,7 @@ Change the tagline from "the React.js docs framework you love." to "The docs tem
 
 ### 4. Update "Getting Started" Button
 
-**File**: `template/src/app/(home)/page.tsx`
+**File**: `<dir>/src/app/(home)/page.tsx`
 
 Change button text from "Getting Started" to "Get Started":
 
@@ -359,7 +374,7 @@ Change button text from "Getting Started" to "Get Started":
 
 ### 5. Change Second Button to Contact
 
-**File**: `template/src/app/(home)/page.tsx`
+**File**: `<dir>/src/app/(home)/page.tsx`
 
 Change button text from "Open GitHub" to "Contact" and update the link to your website:
 
@@ -379,7 +394,7 @@ Change button text from "Open GitHub" to "Contact" and update the link to your w
 
 ### 6. Set Browser Tab Title
 
-**File**: `template/src/app/layout.tsx`
+**File**: `<dir>/src/app/layout.tsx`
 
 Add metadata export to set the browser tab title:
 
@@ -430,6 +445,6 @@ export default function Layout({ children }: LayoutProps<'/'>) {
 
 ## Files Modified
 
-1. `template/src/lib/shared.ts` - App name and GitHub config
-2. `template/src/app/(home)/page.tsx` - Hero section text and buttons
-3. `template/src/app/layout.tsx` - Page title metadata
+1. `<dir>/src/lib/shared.ts` - App name and GitHub config
+2. `<dir>/src/app/(home)/page.tsx` - Hero section text and buttons
+3. `<dir>/src/app/layout.tsx` - Page title metadata

@@ -1,5 +1,16 @@
 **Caution: All the paths/directories mentioned in this file is for reference only because paths may change depending on different versions of fumadocs.**
 
+## Path Convention
+
+Throughout this guide, `<dir>` stands for the top-level directory of the Fumadocs app you are working in — the folder containing `package.json`, `src/`, and `content/`.
+
+- If the app is at the repository root, `<dir>` is `.` and `<dir>/src/app/global.css` simply means `src/app/global.css`.
+- If the app lives in a subfolder (e.g. `template/`, `apps/docs/`), substitute that name: `<dir>/src/app/global.css` → `template/src/app/global.css`.
+
+Resolve `<dir>` once at the start, then apply it consistently to every path below.
+
+**Note:** `<dir>` applies to filesystem paths only. Import specifiers beginning with `@/` (such as `@/lib/navigation`) are TypeScript path aliases resolved relative to the app's own `src/` directory — leave them exactly as written, with no `<dir>` prefix.
+
 # Fumadocs Initial Setup Skills
 
 This guide provides step-by-step instructions for implementing sidebar tabs in Fumadocs with section-specific colors. Complete Task 1 to set up the sidebar structure, then Task 2 to wire up the dynamic coloring system.
@@ -10,11 +21,11 @@ This guide provides step-by-step instructions for implementing sidebar tabs in F
 
 ### Step 1: Create Section Folders
 
-Create two section directories under `content/docs/`:
+Create two section directories under `<dir>/content/docs/`:
 
 ```bash
-mkdir -p "content/docs/(sec-1)"
-mkdir -p "content/docs/sec-2"
+mkdir -p "<dir>/content/docs/(sec-1)"
+mkdir -p "<dir>/content/docs/sec-2"
 ```
 
 **Note**: The parentheses in `(sec-1)` make it a Next.js route group, which means it becomes the default route (accessing `/docs` redirects to this section).
@@ -24,15 +35,15 @@ mkdir -p "content/docs/sec-2"
 Move your content files into the respective sections:
 
 ```bash
-mv content/docs/index.mdx content/docs/(sec-1)/index.mdx
-mv content/docs/test.mdx content/docs/sec-2/test.mdx
+mv "<dir>/content/docs/index.mdx" "<dir>/content/docs/(sec-1)/index.mdx"
+mv "<dir>/content/docs/test.mdx" "<dir>/content/docs/sec-2/test.mdx"
 ```
 
 ### Step 3: Create Section Meta Files
 
 Create `meta.json` in each section folder to define its properties.
 
-**`content/docs/(sec-1)/meta.json`:**
+**`<dir>/content/docs/(sec-1)/meta.json`:**
 ```json
 {
   "title": "Section 1",
@@ -43,7 +54,7 @@ Create `meta.json` in each section folder to define its properties.
 }
 ```
 
-**`content/docs/sec-2/meta.json`:**
+**`<dir>/content/docs/sec-2/meta.json`:**
 ```json
 {
   "title": "Section 2",
@@ -63,7 +74,7 @@ Create `meta.json` in each section folder to define its properties.
 
 Create `meta.json` at the docs root to define tab order:
 
-**`content/docs/meta.json`:**
+**`<dir>/content/docs/meta.json`:**
 ```json
 {
   "pages": ["(sec-1)", "sec-2"]
@@ -80,7 +91,7 @@ Create `meta.json` at the docs root to define tab order:
 
 Create a utility function to extract section names from paths.
 
-**`src/lib/navigation.ts`:**
+**`<dir>/src/lib/navigation.ts`:**
 ```typescript
 export function getSection(path: string | undefined) {
   if (!path) return 'sec-1';
@@ -105,7 +116,7 @@ export function getSection(path: string | undefined) {
 
 Add color variables and section-specific rules to your global CSS.
 
-**`src/app/global.css`:**
+**`<dir>/src/app/global.css`:**
 ```css
 @import 'tailwindcss';
 @import 'fumadocs-ui/css/neutral.css';
@@ -148,7 +159,7 @@ html > body[data-scroll-locked] {
 
 Create a client component that applies section classes dynamically.
 
-**`src/app/layout.client.tsx`:**
+**`<dir>/src/app/layout.client.tsx`:**
 ```typescript
 'use client';
 
@@ -173,7 +184,7 @@ export function Body({ children }: { children: ReactNode }) {
 
 Replace the static body tag with the dynamic Body component.
 
-**`src/app/layout.tsx`:**
+**`<dir>/src/app/layout.tsx`:**
 ```typescript
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import './global.css';
@@ -199,7 +210,7 @@ export default function Layout({ children }: LayoutProps<'/'>) {
 
 Update the docs layout to color tab icons based on their section.
 
-**`src/app/docs/layout.tsx`:**
+**`<dir>/src/app/docs/layout.tsx`:**
 ```typescript
 import { source } from '@/lib/source';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
@@ -301,10 +312,10 @@ After completing both tasks, your Fumadocs site will have:
 
 If you want to add a third section or more, follow these steps:
 
-1. **Create new section folder**: `content/docs/sec-3/`
+1. **Create new section folder**: `<dir>/content/docs/sec-3/`
 2. **Add meta.json** with `"root": true` and your desired title/icon
-3. **Update `content/docs/meta.json`** to include `"sec-3"` in the pages array
-4. **Add color mapping** to `src/lib/navigation.ts`:
+3. **Update `<dir>/content/docs/meta.json`** to include `"sec-3"` in the pages array
+4. **Add color mapping** to `<dir>/src/lib/navigation.ts`:
    ```typescript
    return (
      {
@@ -314,7 +325,7 @@ If you want to add a third section or more, follow these steps:
      }[dir] ?? 'sec-1'
    );
    ```
-5. **Define colors** in `src/app/global.css`:
+5. **Define colors** in `<dir>/src/app/global.css`:
    ```css
    :root {
      --sec-3-color: hsl(120, 70%, 45%);
@@ -331,7 +342,7 @@ If you want to add a third section or more, follow these steps:
 
 ### Changing Colors
 
-To customize the colors for existing sections, modify the values in `src/app/global.css`:
+To customize the colors for existing sections, modify the values in `<dir>/src/app/global.css`:
 
 ```css
 :root {
@@ -392,7 +403,7 @@ This pattern ensures consistency across all UI elements without manually styling
 
 Add the icon component to your existing layout client file.
 
-**`src/app/layout.client.tsx`:**
+**`<dir>/src/app/layout.client.tsx`:**
 ```typescript
 'use client';
 
@@ -441,7 +452,7 @@ export function FumadocsIcon(props: React.SVGProps<SVGSVGElement>) {
 
 Update the layout shared configuration to include the icon in the navbar title.
 
-**`src/lib/layout.shared.tsx`:**
+**`<dir>/src/lib/layout.shared.tsx`:**
 ```typescript
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { appName, gitConfig } from './shared';
@@ -471,7 +482,7 @@ export function baseOptions(): BaseLayoutProps {
 
 Create a Next.js icon route to generate the favicon dynamically.
 
-**`src/app/icon.tsx`:**
+**`<dir>/src/app/icon.tsx`:**
 ```typescript
 import { ImageResponse } from 'next/og';
 

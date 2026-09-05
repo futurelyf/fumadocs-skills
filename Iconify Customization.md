@@ -2,6 +2,19 @@
 
 This guide explains how to add Iconify icon support to a Fumadocs project with offline capability, ensuring icons work without internet connection. The implementation maintains compatibility with the built-in Lucide icons plugin.
 
+## Path Convention
+
+Throughout this guide, `<dir>` stands for the top-level directory of the Fumadocs app you are working in — the folder containing `package.json`, `src/`, and `content/`.
+
+- If the app is at the repository root, `<dir>` is `.` and `<dir>/src/lib/source.ts` simply means `src/lib/source.ts`.
+- If the app lives in a subfolder (e.g. `template/`, `apps/docs/`), substitute that name: `<dir>/src/lib/source.ts` → `template/src/lib/source.ts`.
+
+Resolve `<dir>` once at the start, then apply it consistently to every path below.
+
+**Note:** `<dir>` applies to filesystem paths only. Import specifiers beginning with `@/` (such as `@/lib/icon-registry`) are TypeScript path aliases resolved relative to the app's own `src/` directory — leave them exactly as written, with no `<dir>` prefix.
+
+Separately, `<collection-name>` is not a path. It is a placeholder for an Iconify icon set name (e.g. `mdi`, `logos`, `fa7-brands`) as published under the `@iconify-json/` npm scope — substitute the set you actually want.
+
 ## Overview
 
 Fumadocs comes with built-in support for Lucide icons using the `lucideIconsPlugin()`. This implementation adds Iconify support that co-exists with Lucide without conflicts by:
@@ -20,9 +33,10 @@ Fumadocs comes with built-in support for Lucide icons using the `lucideIconsPlug
 
 ### Step 1: Install Required Packages
 
-Install the `@iconify/react` package and icon set packages you need:
+Install the `@iconify/react` package and icon set packages you need, from inside `<dir>`:
 
 ```bash
+cd "<dir>"
 pnpm install @iconify/react
 pnpm install -D @iconify-json/fa7-brands  # Font Awesome Brands example
 pnpm install -D @iconify-json/<collection-name>
@@ -391,6 +405,7 @@ To add additional icon sets for offline use:
 ### Step 1: Install the Icon Set Package
 
 ```bash
+cd "<dir>"
 pnpm install -D @iconify-json/fa7-brands  # Font Awesome Brands example
 pnpm install -D @iconify-json/<collection-name>
 ```
@@ -440,9 +455,10 @@ If Lucide icons stop working:
 
 ### Type Errors
 
-Run type checking to catch issues:
+Run type checking to catch issues, from inside `<dir>`:
 
 ```bash
+cd "<dir>"
 pnpm run types:check
 # or
 npm run types:check
